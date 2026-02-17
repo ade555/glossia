@@ -2,8 +2,11 @@ import { spawn } from "child_process";
 import chalk from "chalk";
 import ora from "ora";
 import path from "path";
+import { dotenv } from "dotenv";
 
-const DOCSLINGO_DIR = ".docslingo";
+dotenv.config();
+
+const GLOSSIA_DIR = process.env.GLOSSIA_DIR;
 const MAX_RETRIES = 2;
 
 async function runTranslation() {
@@ -12,7 +15,7 @@ async function runTranslation() {
     let hasErrors = false;
 
     const process = spawn("npx", ["lingo.dev@latest", "run"], {
-      cwd: path.resolve(DOCSLINGO_DIR),
+      cwd: path.resolve(GLOSSIA_DIR),
       shell: true,
       stdio: "pipe",
     });

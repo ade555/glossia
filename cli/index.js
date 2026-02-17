@@ -7,11 +7,14 @@ import { checkAuth } from "./src/auth.js";
 import { setup } from "./src/setup.js";
 import { generateConfig } from "./src/config.js";
 import { translate } from "./src/translate.js";
+import { dotenv } from "dotenv";
 
-const DOCSLINGO_DIR = ".docslingo";
+dotenv.config();
+
+const GLOSSIA_DIR = process.env.GLOSSIA_DIR;
 
 program
-  .name("docslingo")
+  .name("glossia")
   .description("Translate your OpenAPI spec into multiple languages")
   .version("1.0.0");
 
@@ -39,7 +42,7 @@ program
     // Step 5: Tell user where their files are
     console.log(chalk.bold("\n✔ Done! Your translated specs are in:\n"));
     targets.forEach((lang) => {
-      console.log(chalk.cyan(`  ${DOCSLINGO_DIR}/i18n/${lang}/api.yaml`));
+      console.log(chalk.cyan(`  ${GLOSSIA_DIR}/i18n/${lang}/api.yaml`));
     });
     console.log(chalk.white("\nTo view your docs, run:"));
     console.log(chalk.cyan("  npx glossia serve\n"));

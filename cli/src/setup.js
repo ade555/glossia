@@ -2,10 +2,12 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import ora from "ora";
+import { dotenv } from "dotenv";
 
-const DOCSLINGO_DIR = ".docslingo";
-const I18N_DIR = path.join(DOCSLINGO_DIR, "i18n");
-const EN_DIR = path.join(I18N_DIR, "en");
+dotenv.config();
+
+const GLOSSIA_DIR = process.env.GLOSSIA_DIR;
+const I18N_DIR = path.join(GLOSSIA_DIR, "i18n");
 
 export async function setup(apiSpecPath, sourceLanguage) {
   const spinner = ora("Setting up project...").start();
@@ -23,9 +25,9 @@ export async function setup(apiSpecPath, sourceLanguage) {
     const sourceDir = path.join(I18N_DIR, sourceLanguage);
 
     // Create folder structure if it doesn't exist
-    if (!fs.existsSync(DOCSLINGO_DIR)) {
+    if (!fs.existsSync(GLOSSIA_DIR)) {
       fs.mkdirSync(sourceDir, { recursive: true });
-      spinner.text = "Created .docslingo folder structure";
+      spinner.text = "Created .glossia folder structure";
     }
 
     // Always update the spec file

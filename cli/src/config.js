@@ -2,9 +2,12 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import ora from "ora";
+import { dotenv } from "dotenv";
 
-const DOCSLINGO_DIR = ".docslingo";
-const CONFIG_PATH = path.join(DOCSLINGO_DIR, "i18n.json");
+dotenv.config();
+
+const GLOSSIA_DIR = process.env.GLOSSIA_DIR;
+const CONFIG_PATH = path.join(GLOSSIA_DIR, "i18n.json");
 
 export async function generateConfig(languages, source = "en") {
   const spinner = ora("Generating config...").start();
