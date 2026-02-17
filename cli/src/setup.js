@@ -7,7 +7,7 @@ const DOCSLINGO_DIR = ".docslingo";
 const I18N_DIR = path.join(DOCSLINGO_DIR, "i18n");
 const EN_DIR = path.join(I18N_DIR, "en");
 
-export async function setup(apiSpecPath) {
+export async function setup(apiSpecPath, sourceLanguage) {
   const spinner = ora("Setting up project...").start();
 
   try {
@@ -20,14 +20,16 @@ export async function setup(apiSpecPath) {
       process.exit(1);
     }
 
+    const sourceDir = path.join(I18N_DIR, sourceLanguage);
+
     // Create folder structure if it doesn't exist
     if (!fs.existsSync(DOCSLINGO_DIR)) {
-      fs.mkdirSync(EN_DIR, { recursive: true });
+      fs.mkdirSync(sourceDir, { recursive: true });
       spinner.text = "Created .docslingo folder structure";
     }
 
     // Always update the spec file
-    const destinationPath = path.join(EN_DIR, "api.yaml");
+    const destinationPath = path.join(sourceDir, "api.yaml");
     fs.copyFileSync(resolvedSpecPath, destinationPath);
 
     spinner.succeed(chalk.green("Project setup complete"));

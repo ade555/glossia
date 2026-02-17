@@ -4,19 +4,33 @@ import chalk from "chalk";
 import ora from "ora";
 
 const DOCSLINGO_DIR = ".docslingo";
+const CONFIG_PATH = path.join(DOCSLINGO_DIR, "i18n.json");
 
-export async function generateConfig(languages) {
+export async function generateConfig(languages, source = "en") {
   const spinner = ora("Generating config...").start();
 
   try {
-    // Parse languages string into array
     // Handles both comma and space separated: "es,fr,de" or "es fr de"
-    const targets = languages
-      .split(/[\s,]+/)
-      .map((lang) => lang.trim())
-      .filter(Boolean);
+    // Parse new languages if provided
+    let newTargets = [];
+    if (languages) {
+      newTargets = languages
+        .split(/[\s,]+/)
+        .map((lang) => lang.trim())
+        .filter(Boolean);
+    }
 
-    if (targets.length === 0) {
+    // Check if config already exists
+    let existingTargets = [];
+    if (fs.existsSync(CONFIG_PATH)) {
+      const existingConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+      existingTargets = existingConfig.locale?.targets || [];
+    }
+
+    // Merge: existing + new, remove duplicates
+    const allTargets = [...new Set([...existingTargets, ...newTargets])];
+
+    if (allTargets.length === 0) {
       spinner.fail(chalk.red("No target languages provided"));
       process.exit(1);
     }
@@ -25,8 +39,8 @@ export async function generateConfig(languages) {
       $schema: "https://lingo.dev/schema/i18n.json",
       version: "1.12",
       locale: {
-        source: "en",
-        targets,
+        source: source,
+        targets: allTargets,
       },
       buckets: {
         yaml: {
@@ -35,11 +49,18 @@ export async function generateConfig(languages) {
       },
     };
 
-    const configPath = path.join(DOCSLINGO_DIR, "i18n.json");
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-    spinner.succeed(chalk.green(`Config generated for: ${targets.join(", ")}`));
-    return targets;
+    if (newTargets.length > 0) {
+      spinner.succeed(
+        chalk.green(`Config updated: ${source} → ${allTargets.join(", ")}`),
+      );
+    } else {
+      spinner.succeed(
+        chalk.green(
+          `Using existing config: ${source} → ${allTargets.join(", ")}`,
+        ),
+      );
+    }
+    return allTargets;
   } catch (err) {
     spinner.fail(chalk.red("Config generation failed: " + err.message));
     process.exit(1);

@@ -19,18 +19,19 @@ program
   .command("generate")
   .description("Translate an OpenAPI spec into multiple languages")
   .requiredOption("--spec <path>", "Path to your OpenAPI spec file")
-  .requiredOption("--languages <languages>", "Target languages e.g. es,fr,de")
+  .option("--languages <languages>", "Target languages e.g. es,fr,de")
+  .option("--source <language>", "Source language (default: en)", "en")
   .action(async (options) => {
-    console.log(chalk.bold("\n🌍 Docslingo\n"));
+    console.log(chalk.bold("\n🌍 Glossia\n"));
 
     // Step 1: Check authentication
     await checkAuth();
 
     // Step 2: Setup folder structure and copy spec
-    await setup(options.spec);
+    await setup(options.spec, options.source);
 
     // Step 3: Generate i18n.json config
-    const targets = await generateConfig(options.languages);
+    const targets = await generateConfig(options.languages, options.source);
 
     // Step 4: Run translations
     await translate(targets);
@@ -41,7 +42,7 @@ program
       console.log(chalk.cyan(`  ${DOCSLINGO_DIR}/i18n/${lang}/api.yaml`));
     });
     console.log(chalk.white("\nTo view your docs, run:"));
-    console.log(chalk.cyan("  npx docslingo serve\n"));
+    console.log(chalk.cyan("  npx glossia serve\n"));
   });
 
 program.parse();
