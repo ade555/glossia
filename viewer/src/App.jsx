@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLingoContext } from "@lingo.dev/compiler/react";
 import {
   getDefaultLanguage,
   getDefaultSpec,
@@ -11,11 +12,12 @@ import EndpointDetail from "./components/EndpointDetail";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 
 function App() {
+  const { locale: uiLocale, setLocale: setUILocale } = useLingoContext(); // UI language from compiler
+
   const [spec, setSpec] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [currentLanguage, setCurrentLanguage] = useState(null);
   const [currentSpecFile, setCurrentSpecFile] = useState(null);
   const [availableLanguages, setAvailableLanguages] = useState([]);
   const [availableSpecs, setAvailableSpecs] = useState([]);
@@ -27,22 +29,21 @@ function App() {
       try {
         setLoading(true);
 
-        // Get defaults
         const defaultLang = await getDefaultLanguage();
         const defaultSpec = await getDefaultSpec();
         const languages = await getAvailableLanguages();
         const index = await getSpecIndex();
 
-        setCurrentLanguage(defaultLang);
+        // Set UI language to match default API spec language
+        setUILocale(defaultLang);
+
         setCurrentSpecFile(defaultSpec);
         setAvailableLanguages(languages.all);
         setAvailableSpecs(index[defaultLang] || []);
 
-        // Load the default spec
         const loadedSpec = await loadSpec(defaultLang, defaultSpec);
         setSpec(loadedSpec);
 
-        // Auto-select first endpoint
         if (loadedSpec.paths) {
           const firstPath = Object.keys(loadedSpec.paths)[0];
           const firstMethod = Object.keys(loadedSpec.paths[firstPath])[0];
@@ -56,19 +57,18 @@ function App() {
     }
 
     init();
-  }, []);
+  }, [setUILocale]);
 
-  // Reload spec when language or file changes
+  // Reload spec when UI language changes
   useEffect(() => {
-    if (!currentLanguage || !currentSpecFile) return;
+    if (!uiLocale || !currentSpecFile) return;
 
     async function reload() {
       try {
         setLoading(true);
-        const loadedSpec = await loadSpec(currentLanguage, currentSpecFile);
+        const loadedSpec = await loadSpec(uiLocale, currentSpecFile);
         setSpec(loadedSpec);
 
-        // Reselect first endpoint in new spec
         if (loadedSpec.paths) {
           const firstPath = Object.keys(loadedSpec.paths)[0];
           const firstMethod = Object.keys(loadedSpec.paths[firstPath])[0];
@@ -82,19 +82,19 @@ function App() {
     }
 
     reload();
-  }, [currentLanguage, currentSpecFile]);
+  }, [uiLocale, currentSpecFile]);
 
   // Update available specs when language changes
   useEffect(() => {
-    if (!currentLanguage) return;
+    if (!uiLocale) return;
 
     async function updateSpecs() {
       const index = await getSpecIndex();
-      setAvailableSpecs(index[currentLanguage] || []);
+      setAvailableSpecs(index[uiLocale] || []);
     }
 
     updateSpecs();
-  }, [currentLanguage]);
+  }, [uiLocale]);
 
   if (loading) {
     return (
@@ -126,7 +126,6 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -134,7 +133,6 @@ function App() {
               {spec?.info?.title || "API Documentation"}
             </h1>
 
-            {/* Spec selector (if multiple specs) */}
             {availableSpecs.length > 1 && (
               <select
                 value={currentSpecFile}
@@ -150,11 +148,7 @@ function App() {
             )}
           </div>
 
-          <LanguageSwitcher
-            currentLanguage={currentLanguage}
-            availableLanguages={availableLanguages}
-            onLanguageChange={setCurrentLanguage}
-          />
+          <LanguageSwitcher availableLanguages={availableLanguages} />
         </div>
 
         {spec?.info?.description && (
@@ -162,7 +156,6 @@ function App() {
         )}
       </header>
 
-      {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
           spec={spec}

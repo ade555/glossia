@@ -53,7 +53,7 @@ program
   .description("Start the local docs viewer")
   .option("-p, --port <port>", "Port to run server on", "3000")
   .action(async (options) => {
-    const { spawn } = await import("child_process");
+    const { spawn, execSync } = await import("child_process");
     const path = await import("path");
     const fs = await import("fs");
     const { fileURLToPath } = await import("url");
@@ -78,6 +78,53 @@ program
     }
 
     console.log(chalk.cyan("\n🚀 Starting Glossia viewer...\n"));
+
+    // Check Lingo.dev authentication for viewer
+    try {
+      const authOutput = execSync("npx lingo.dev@latest auth 2>&1", {
+        cwd: viewerDir,
+        encoding: "utf-8",
+        stdio: "pipe",
+      });
+
+      if (!authOutput.includes("Authenticated as")) {
+        // Not authenticated, trigger login from viewer directory
+        console.log(
+          chalk.yellow("⚠ Viewer not authenticated. Opening browser...\n"),
+        );
+
+        const login = spawn("npx", ["lingo.dev@latest", "login"], {
+          cwd: viewerDir,
+          stdio: "inherit",
+          shell: true,
+        });
+
+        await new Promise((resolve, reject) => {
+          login.on("close", (code) => {
+            if (code === 0) {
+              console.log(
+                chalk.green("\n✔ Viewer authenticated successfully\n"),
+              );
+              resolve();
+            } else {
+              reject(new Error("Login failed"));
+            }
+          });
+
+          login.on("error", reject);
+        });
+      } else {
+        console.log(chalk.green("✔ Viewer authenticated\n"));
+      }
+    } catch (err) {
+      console.log(chalk.red("\n✖ Failed to authenticate viewer"));
+      console.log(
+        chalk.white("Please run manually from the viewer directory:"),
+      );
+      console.log(chalk.cyan("  cd viewer && npx lingo.dev@latest login\n"));
+      console.log(chalk.white("Then restart: npx glossia serve\n"));
+      process.exit(1);
+    }
 
     // Copy .glossia to viewer/public
     if (fs.existsSync(glossiaDest)) {
@@ -116,19 +163,21 @@ program
     const viteConfigContent = `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { lingoCompilerPlugin } from '@lingo.dev/compiler/vite'
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [
-    react(),
     lingoCompilerPlugin({
       sourceRoot: 'src',
       sourceLocale: '${sourceLocale}',
       targetLocales: ${JSON.stringify(targetLocales)},
       models: 'lingo.dev',
       dev: {
-        usePseudotranslator: true,
+        usePseudotranslator: false,
       },
     }),
+    react(),
+    tailwindcss(),
   ],
 })
 `;
