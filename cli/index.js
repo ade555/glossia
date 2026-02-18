@@ -95,9 +95,9 @@ program
       const files = fs
         .readdirSync(langDir)
         .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
-        .sort(); // Alphabetical order for consistent default
+        .sort();
 
-      index[lang] = files; // Array of all yaml files
+      index[lang] = files;
     });
 
     fs.writeFileSync(
@@ -105,16 +105,67 @@ program
       JSON.stringify(index, null, 2),
     );
 
+    // Read i18n.json to get languages
+    const i18nConfig = JSON.parse(
+      fs.readFileSync(path.join(glossiaSource, "i18n.json"), "utf-8"),
+    );
+    const sourceLocale = i18nConfig.locale.source;
+    const targetLocales = i18nConfig.locale.targets;
+
+    // Generate dynamic Vite config
+    const viteConfigContent = `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { lingoCompilerPlugin } from '@lingo.dev/compiler/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    lingoCompilerPlugin({
+      sourceRoot: 'src',
+      sourceLocale: '${sourceLocale}',
+      targetLocales: ${JSON.stringify(targetLocales)},
+      models: 'lingo.dev',
+      dev: {
+        usePseudotranslator: true,
+      },
+    }),
+  ],
+})
+`;
+
+    const generatedConfigPath = path.join(
+      viewerDir,
+      "vite.config.generated.js",
+    );
+    fs.writeFileSync(generatedConfigPath, viteConfigContent);
+
     console.log(chalk.green("✔ Copied specs to viewer"));
+    console.log(
+      chalk.green(
+        `✔ Generated Vite config with languages: ${sourceLocale} → ${targetLocales.join(", ")}`,
+      ),
+    );
     console.log(
       chalk.cyan(`\nStarting server on http://localhost:${options.port}\n`),
     );
 
-    const server = spawn("npm", ["run", "dev", "--", "--port", options.port], {
-      cwd: viewerDir,
-      stdio: "inherit",
-      shell: true,
-    });
+    const server = spawn(
+      "npm",
+      [
+        "run",
+        "dev",
+        "--",
+        "--config",
+        "vite.config.generated.js",
+        "--port",
+        options.port,
+      ],
+      {
+        cwd: viewerDir,
+        stdio: "inherit",
+        shell: true,
+      },
+    );
 
     server.on("error", (err) => {
       console.log(chalk.red("Failed to start viewer:", err.message));
