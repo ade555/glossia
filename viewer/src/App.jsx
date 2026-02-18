@@ -1,3 +1,4 @@
+import ReactMarkdown from "react-markdown";
 import { useState, useEffect } from "react";
 import { useLingoContext } from "@lingo.dev/compiler/react";
 import {
@@ -22,6 +23,7 @@ function App() {
   const [availableLanguages, setAvailableLanguages] = useState([]);
   const [availableSpecs, setAvailableSpecs] = useState([]);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Initialize on mount
   useEffect(() => {
@@ -150,10 +152,6 @@ function App() {
 
           <LanguageSwitcher availableLanguages={availableLanguages} />
         </div>
-
-        {spec?.info?.description && (
-          <p className="text-gray-600 mt-2 text-sm">{spec.info.description}</p>
-        )}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
@@ -164,6 +162,45 @@ function App() {
         />
 
         <main className="flex-1 overflow-y-auto">
+          {spec?.info?.description && !selectedEndpoint && (
+            <div className="p-8 max-w-5xl">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Overview
+              </h2>
+              <div className="prose prose-slate max-w-none">
+                <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-6 border border-slate-200">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => (
+                        <p
+                          className="text-gray-700 leading-relaxed mb-3 last:mb-0"
+                          {...props}
+                        />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ul className="space-y-2 my-3 ml-4" {...props} />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li className="text-gray-700 flex items-start">
+                          <span className="text-blue-600 mr-2 mt-0.5">•</span>
+                          <span>{props.children}</span>
+                        </li>
+                      ),
+                      strong: ({ node, ...props }) => (
+                        <strong
+                          className="font-semibold text-gray-900"
+                          {...props}
+                        />
+                      ),
+                    }}
+                  >
+                    {spec.info.description}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedEndpoint && (
             <EndpointDetail
               spec={spec}
