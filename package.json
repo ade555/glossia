@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "cli": "node cli/src/index.js",
+    "cli": "node cli/index.js",
     "viewer": "npm run dev --prefix viewer"
   },
   "keywords": [],

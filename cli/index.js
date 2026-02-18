@@ -48,4 +48,78 @@ program
     console.log(chalk.cyan("  npx glossia serve\n"));
   });
 
+program
+  .command("serve")
+  .description("Start the local docs viewer")
+  .option("-p, --port <port>", "Port to run server on", "3000")
+  .action(async (options) => {
+    const { spawn } = await import("child_process");
+    const path = await import("path");
+    const fs = await import("fs");
+    const { fileURLToPath } = await import("url");
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const viewerDir = path.resolve(__dirname, "../viewer");
+    const publicDir = path.join(viewerDir, "public");
+    const glossiaSource = path.join(process.cwd(), ".glossia");
+    const glossiaDest = path.join(publicDir, "glossia");
+
+    // Check if .glossia exists
+    if (!fs.existsSync(glossiaSource)) {
+      console.log(
+        chalk.red("\n✖ No .glossia folder found in current directory"),
+      );
+      console.log(
+        chalk.white(
+          "Run: npx glossia generate --spec api.yaml --languages es,fr first\n",
+        ),
+      );
+      process.exit(1);
+    }
+
+    console.log(chalk.cyan("\n🚀 Starting Glossia viewer...\n"));
+
+    // Copy .glossia to viewer/public
+    if (fs.existsSync(glossiaDest)) {
+      fs.rmSync(glossiaDest, { recursive: true });
+    }
+    fs.cpSync(glossiaSource, glossiaDest, { recursive: true });
+
+    // Create index of available files
+    const i18nDir = path.join(glossiaSource, "i18n");
+    const languages = fs.readdirSync(i18nDir);
+    const index = {};
+
+    languages.forEach((lang) => {
+      const langDir = path.join(i18nDir, lang);
+      const files = fs
+        .readdirSync(langDir)
+        .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
+        .sort(); // Alphabetical order for consistent default
+
+      index[lang] = files; // Array of all yaml files
+    });
+
+    fs.writeFileSync(
+      path.join(glossiaDest, "index.json"),
+      JSON.stringify(index, null, 2),
+    );
+
+    console.log(chalk.green("✔ Copied specs to viewer"));
+    console.log(
+      chalk.cyan(`\nStarting server on http://localhost:${options.port}\n`),
+    );
+
+    const server = spawn("npm", ["run", "dev", "--", "--port", options.port], {
+      cwd: viewerDir,
+      stdio: "inherit",
+      shell: true,
+    });
+
+    server.on("error", (err) => {
+      console.log(chalk.red("Failed to start viewer:", err.message));
+      process.exit(1);
+    });
+  });
+
 program.parse();
