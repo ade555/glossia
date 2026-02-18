@@ -9,30 +9,30 @@ dotenv.config();
 const GLOSSIA_DIR = process.env.GLOSSIA_DIR;
 const I18N_DIR = path.join(GLOSSIA_DIR, "i18n");
 
-export async function setup(apiSpecPath, sourceLanguage) {
+export async function setup(specPath, sourceLanguage) {
   const spinner = ora("Setting up project...").start();
 
   try {
-    // Resolve the spec file path
-    const resolvedSpecPath = path.resolve(apiSpecPath);
+    const resolvedSpecPath = path.resolve(specPath);
 
-    // Check if specfication file exists
     if (!fs.existsSync(resolvedSpecPath)) {
-      spinner.fail(chalk.red(`Spec file not found: ${apiSpecPath}`));
+      spinner.fail(chalk.red(`Spec file not found: ${specPath}`));
       process.exit(1);
     }
 
+    // Use source language folder
     const sourceDir = path.join(I18N_DIR, sourceLanguage);
 
-    // Create folder structure if it doesn't exist
     if (!fs.existsSync(GLOSSIA_DIR)) {
       fs.mkdirSync(sourceDir, { recursive: true });
       spinner.text = "Created .glossia folder structure";
     }
 
-    // Always update the spec file
-    const destinationPath = path.join(sourceDir, "api.yaml");
-    fs.copyFileSync(resolvedSpecPath, destinationPath);
+    // Preserve the original filename
+    const originalFilename = path.basename(resolvedSpecPath);
+    const destPath = path.join(sourceDir, originalFilename);
+
+    fs.copyFileSync(resolvedSpecPath, destPath);
 
     spinner.succeed(chalk.green("Project setup complete"));
   } catch (err) {
