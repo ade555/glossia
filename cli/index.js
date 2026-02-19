@@ -56,6 +56,7 @@ program
     const { spawn } = await import("child_process");
     const path = await import("path");
     const fs = await import("fs");
+    const readline = await import("readline");
     const { fileURLToPath } = await import("url");
 
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,6 +87,65 @@ program
 
     console.log(chalk.cyan("\n🚀 Starting Glossia viewer...\n"));
 
+    // Check for API key and prompt if not found
+    let apiKey = process.env.LINGODOTDEV_API_KEY;
+    const envPath = path.join(viewerDir, ".env");
+
+    // Check if API key exists in viewer/.env
+    if (!apiKey && fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, "utf-8");
+      const match = envContent.match(/LINGODOTDEV_API_KEY=(.+)/);
+      if (match) {
+        apiKey = match[1].trim();
+      }
+    }
+
+    // Prompt for API key if not found
+    if (!apiKey) {
+      console.log(chalk.yellow("⚠ Lingo.dev API key not found.\n"));
+      console.log(chalk.white("To get your API key:"));
+      console.log(chalk.cyan("  1. Visit https://lingo.dev"));
+      console.log(chalk.cyan("  2. Sign in and go to Settings"));
+      console.log(chalk.cyan("  3. Copy your API key\n"));
+
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      apiKey = await new Promise((resolve) => {
+        rl.question(chalk.white("Enter your Lingo.dev API key: "), (answer) => {
+          rl.close();
+          resolve(answer.trim());
+        });
+      });
+
+      if (!apiKey) {
+        console.log(chalk.red("\n✖ API key is required to run the viewer"));
+        process.exit(1);
+      }
+
+      // Save API key to viewer/.env for future use
+      let existingEnv = "";
+      if (fs.existsSync(envPath)) {
+        existingEnv = fs.readFileSync(envPath, "utf-8");
+        // Remove existing LINGODOTDEV_API_KEY line if present
+        existingEnv = existingEnv
+          .split("\n")
+          .filter((line) => !line.startsWith("LINGODOTDEV_API_KEY="))
+          .join("\n");
+      }
+      // Add the new API key
+      const newEnvContent = existingEnv
+        ? `${existingEnv}\nLINGODOTDEV_API_KEY=${apiKey}\n`
+        : `LINGODOTDEV_API_KEY=${apiKey}\n`;
+
+      fs.writeFileSync(envPath, newEnvContent);
+      console.log(chalk.green("\n✔ API key saved to viewer/.env\n"));
+    } else {
+      console.log(chalk.green("✔ API key found\n"));
+    }
+
     // Copy .glossia to viewer/public
     if (fs.existsSync(glossiaDest)) {
       fs.rmSync(glossiaDest, { recursive: true });
@@ -111,16 +171,6 @@ program
       path.join(glossiaDest, "index.json"),
       JSON.stringify(index, null, 2),
     );
-
-    // Create .env with API key if you have it
-    const envPath = path.join(viewerDir, ".env");
-    const envContent = process.env.LINGODOTDEV_API_KEY
-      ? `LINGODOTDEV_API_KEY=${process.env.LINGODOTDEV_API_KEY}\n`
-      : "";
-
-    if (envContent) {
-      fs.writeFileSync(envPath, envContent);
-    }
 
     // Generate Vite config with Compiler
     const viteConfigContent = `import { defineConfig } from 'vite'
