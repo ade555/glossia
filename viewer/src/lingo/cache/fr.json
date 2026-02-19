@@ -1,0 +1,25 @@
+{
+  "version": 0.1,
+  "locale": "fr",
+  "entries": {
+    "866909fd4be9": "Chargement de la documentation API...",
+    "c4f3e39c4f23": "⚠️",
+    "cffeb53c31b2": "Échec du chargement de la documentation",
+    "ece9fc0d83c3": "Assurez-vous d'avoir d'abord exécuté `glossia generate`.",
+    "c33726a8eebe": "Aperçu",
+    "8e689a27a125": "Langue :",
+    "f92b3c352307": "Aucun endpoint trouvé",
+    "6fa6a60094eb": "Endpoints",
+    "35eb926d0ba3": "Paramètres",
+    "02cd02f16f35": "Nom",
+    "4f02b762d8a3": "Type",
+    "506a2ee0171a": "Dans",
+    "05f6c2ce8184": "Requis",
+    "8d679c60c0f9": "Description",
+    "ca61ee25d49b": "Corps de la requête",
+    "a2fb1dcdc476": "Types de contenu :",
+    "0a37de7803e5": "Réponses",
+    "3076b3407456": "ID d'opération :",
+    "f8c3385b8513": "Tags :"
+  }
+}

@@ -38,7 +38,7 @@ export default function EndpointDetail({ spec, path, method }) {
       {operation.parameters && operation.parameters.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">📋</span> Parameters
+            Parameters
           </h2>
 
           <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -107,8 +107,8 @@ export default function EndpointDetail({ spec, path, method }) {
                         {param.schema?.example && (
                           <div className="mt-1">
                             <span className="text-xs text-gray-500">
-                              Example:{" "}
-                            </span>
+                              Example:
+                            </span>{" "}
                             <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">
                               {JSON.stringify(param.schema.example)}
                             </code>
@@ -117,7 +117,7 @@ export default function EndpointDetail({ spec, path, method }) {
                         {param.schema?.default !== undefined && (
                           <div className="mt-1">
                             <span className="text-xs text-gray-500">
-                              Default:{" "}
+                              Default:
                             </span>
                             <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">
                               {JSON.stringify(param.schema.default)}
@@ -138,7 +138,7 @@ export default function EndpointDetail({ spec, path, method }) {
       {operation.requestBody && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">📤</span> Request Body
+            Request Body
           </h2>
 
           <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
@@ -185,7 +185,7 @@ export default function EndpointDetail({ spec, path, method }) {
       {operation.responses && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">📨</span> Responses
+            Responses
           </h2>
 
           <div className="space-y-4">

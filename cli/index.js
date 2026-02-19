@@ -53,7 +53,7 @@ program
   .description("Start the local docs viewer")
   .option("-p, --port <port>", "Port to run server on", "3000")
   .action(async (options) => {
-    const { spawn, execSync } = await import("child_process");
+    const { spawn } = await import("child_process");
     const path = await import("path");
     const fs = await import("fs");
     const { fileURLToPath } = await import("url");
@@ -77,54 +77,14 @@ program
       process.exit(1);
     }
 
+    // Read API spec languages
+    const i18nConfig = JSON.parse(
+      fs.readFileSync(path.join(glossiaSource, "i18n.json"), "utf-8"),
+    );
+    const sourceLocale = i18nConfig.locale.source;
+    const targetLocales = i18nConfig.locale.targets;
+
     console.log(chalk.cyan("\n🚀 Starting Glossia viewer...\n"));
-
-    // Check Lingo.dev authentication for viewer
-    try {
-      const authOutput = execSync("npx lingo.dev@latest auth 2>&1", {
-        cwd: viewerDir,
-        encoding: "utf-8",
-        stdio: "pipe",
-      });
-
-      if (!authOutput.includes("Authenticated as")) {
-        // Not authenticated, trigger login from viewer directory
-        console.log(
-          chalk.yellow("⚠ Viewer not authenticated. Opening browser...\n"),
-        );
-
-        const login = spawn("npx", ["lingo.dev@latest", "login"], {
-          cwd: viewerDir,
-          stdio: "inherit",
-          shell: true,
-        });
-
-        await new Promise((resolve, reject) => {
-          login.on("close", (code) => {
-            if (code === 0) {
-              console.log(
-                chalk.green("\n✔ Viewer authenticated successfully\n"),
-              );
-              resolve();
-            } else {
-              reject(new Error("Login failed"));
-            }
-          });
-
-          login.on("error", reject);
-        });
-      } else {
-        console.log(chalk.green("✔ Viewer authenticated\n"));
-      }
-    } catch (err) {
-      console.log(chalk.red("\n✖ Failed to authenticate viewer"));
-      console.log(
-        chalk.white("Please run manually from the viewer directory:"),
-      );
-      console.log(chalk.cyan("  cd viewer && npx lingo.dev@latest login\n"));
-      console.log(chalk.white("Then restart: npx glossia serve\n"));
-      process.exit(1);
-    }
 
     // Copy .glossia to viewer/public
     if (fs.existsSync(glossiaDest)) {
@@ -132,13 +92,13 @@ program
     }
     fs.cpSync(glossiaSource, glossiaDest, { recursive: true });
 
-    // Create index of available files
-    const i18nDir = path.join(glossiaSource, "i18n");
-    const languages = fs.readdirSync(i18nDir);
+    // Create index of available spec files
+    const specI18nDir = path.join(glossiaSource, "i18n");
+    const languages = fs.readdirSync(specI18nDir);
     const index = {};
 
     languages.forEach((lang) => {
-      const langDir = path.join(i18nDir, lang);
+      const langDir = path.join(specI18nDir, lang);
       const files = fs
         .readdirSync(langDir)
         .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
@@ -152,14 +112,17 @@ program
       JSON.stringify(index, null, 2),
     );
 
-    // Read i18n.json to get languages
-    const i18nConfig = JSON.parse(
-      fs.readFileSync(path.join(glossiaSource, "i18n.json"), "utf-8"),
-    );
-    const sourceLocale = i18nConfig.locale.source;
-    const targetLocales = i18nConfig.locale.targets;
+    // Create .env with API key if you have it
+    const envPath = path.join(viewerDir, ".env");
+    const envContent = process.env.LINGODOTDEV_API_KEY
+      ? `LINGODOTDEV_API_KEY=${process.env.LINGODOTDEV_API_KEY}\n`
+      : "";
 
-    // Generate dynamic Vite config
+    if (envContent) {
+      fs.writeFileSync(envPath, envContent);
+    }
+
+    // Generate Vite config with Compiler
     const viteConfigContent = `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { lingoCompilerPlugin } from '@lingo.dev/compiler/vite'
@@ -182,22 +145,17 @@ export default defineConfig({
 })
 `;
 
-    const generatedConfigPath = path.join(
-      viewerDir,
-      "vite.config.generated.js",
+    fs.writeFileSync(
+      path.join(viewerDir, "vite.config.generated.js"),
+      viteConfigContent,
     );
-    fs.writeFileSync(generatedConfigPath, viteConfigContent);
 
-    console.log(chalk.green("✔ Copied specs to viewer"));
-    console.log(
-      chalk.green(
-        `✔ Generated Vite config with languages: ${sourceLocale} → ${targetLocales.join(", ")}`,
-      ),
-    );
+    console.log(chalk.green("✔ Setup complete"));
     console.log(
       chalk.cyan(`\nStarting server on http://localhost:${options.port}\n`),
     );
 
+    // Start server
     const server = spawn(
       "npm",
       [
