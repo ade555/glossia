@@ -3,8 +3,8 @@ import path from "path";
 import chalk from "chalk";
 import ora from "ora";
 
-const GLOSSIA_DIR = ".glossia";
-const I18N_DIR = path.join(GLOSSIA_DIR, "i18n");
+const TRANSSPEC_DIR = ".trans-spec";
+const I18N_DIR = path.join(TRANSSPEC_DIR, "i18n");
 
 export async function setup(specPath, sourceLanguage) {
   const spinner = ora("Setting up project...").start();
@@ -20,9 +20,9 @@ export async function setup(specPath, sourceLanguage) {
     // Use source language folder
     const sourceDir = path.join(I18N_DIR, sourceLanguage);
 
-    if (!fs.existsSync(GLOSSIA_DIR)) {
+    if (!fs.existsSync(TRANSSPEC_DIR)) {
       fs.mkdirSync(sourceDir, { recursive: true });
-      spinner.text = "Created .glossia folder structure";
+      spinner.text = "Created .trans-spec folder structure";
     }
 
     // Preserve the original filename

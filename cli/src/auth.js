@@ -29,6 +29,7 @@ async function triggerLogin() {
     const login = spawn("npx", ["lingo.dev@latest", "login"], {
       stdio: "inherit",
       shell: true,
+      windowsHide: false,
     });
 
     login.on("close", (code) => {
@@ -49,7 +50,9 @@ async function triggerLogin() {
 }
 
 export async function checkAuth() {
-  const spinner = ora("Checking authentication...").start();
+  const spinner = ora(
+    "Checking authentication (downloading dependencies on first run, this may take a minute)...",
+  ).start();
 
   // Already authenticated, no need to login
   if (isAuthenticated()) {

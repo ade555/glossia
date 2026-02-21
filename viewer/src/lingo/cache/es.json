@@ -1,0 +1,25 @@
+{
+  "version": 0.1,
+  "locale": "es",
+  "entries": {
+    "866909fd4be9": "Cargando documentación de la API...",
+    "c4f3e39c4f23": "⚠️",
+    "cffeb53c31b2": "Error al cargar la documentación",
+    "517221382feb": "Asegúrate de haber ejecutado `trans-spec generate` primero.",
+    "c33726a8eebe": "Descripción general",
+    "8e689a27a125": "Idioma:",
+    "f92b3c352307": "No se encontraron endpoints",
+    "6fa6a60094eb": "Endpoints",
+    "35eb926d0ba3": "Parámetros",
+    "02cd02f16f35": "Nombre",
+    "4f02b762d8a3": "Tipo",
+    "506a2ee0171a": "En",
+    "05f6c2ce8184": "Requerido",
+    "8d679c60c0f9": "Descripción",
+    "ca61ee25d49b": "Cuerpo de la solicitud",
+    "a2fb1dcdc476": "Tipos de contenido:",
+    "0a37de7803e5": "Respuestas",
+    "3076b3407456": "ID de operación:",
+    "f8c3385b8513": "Etiquetas:"
+  }
+}

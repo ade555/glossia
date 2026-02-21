@@ -35,7 +35,7 @@ dist/
 build/
 
 .docslingo
-.glossia
+.trans-spec
 i18n.cache
 api.yaml
 api2.yaml

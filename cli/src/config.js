@@ -3,8 +3,8 @@ import path from "path";
 import chalk from "chalk";
 import ora from "ora";
 
-const GLOSSIA_DIR = ".glossia";
-const CONFIG_PATH = path.join(GLOSSIA_DIR, "i18n.json");
+const TRANSSPEC_DIR = ".trans-spec";
+const CONFIG_PATH = path.join(TRANSSPEC_DIR, "i18n.json");
 
 export async function generateConfig(languages, source = "en") {
   const spinner = ora("Generating config...").start();

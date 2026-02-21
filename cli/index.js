@@ -7,11 +7,11 @@ import { checkAuth } from "./src/auth.js";
 import { setup } from "./src/setup.js";
 import { generateConfig } from "./src/config.js";
 import { translate } from "./src/translate.js";
-const GLOSSIA_DIR = ".glossia";
-const EJECTED_VIEWER_DIR = "glossia-viewer";
+const TRANSSPEC_DIR = ".trans-spec";
+const EJECTED_VIEWER_DIR = "trans-spec-viewer";
 
 program
-  .name("glossia")
+  .name("trans-spec")
   .description("Translate your OpenAPI spec into multiple languages")
   .version("1.0.0");
 
@@ -22,7 +22,7 @@ program
   .option("--languages <languages>", "Target languages e.g. es,fr,de")
   .option("--source <language>", "Source language (default: en)", "en")
   .action(async (options) => {
-    console.log(chalk.bold("\n🌍 Glossia\n"));
+    console.log(chalk.bold("\n🌍 Trans-Spec\n"));
 
     // Step 1: Check authentication
     await checkAuth();
@@ -39,10 +39,10 @@ program
     // Step 5: Tell user where their files are
     console.log(chalk.bold("\n✔ Done! Your translated specs are in:\n"));
     targets.forEach((lang) => {
-      console.log(chalk.cyan(`  ${GLOSSIA_DIR}/i18n/${lang}/api.yaml`));
+      console.log(chalk.cyan(`  ${TRANSSPEC_DIR}/i18n/${lang}/api.yaml`));
     });
     console.log(chalk.white("\nTo view your docs, run:"));
-    console.log(chalk.cyan("  npx glossia serve\n"));
+    console.log(chalk.cyan("  npx trans-spec serve\n"));
   });
 
 program
@@ -58,7 +58,7 @@ program
     const packageViewerDir = path.resolve(__dirname, "../viewer");
     const ejectedViewerDir = path.join(process.cwd(), EJECTED_VIEWER_DIR);
 
-    console.log(chalk.bold("\n📦 Glossia Eject\n"));
+    console.log(chalk.bold("\n📦 Trans-Spec Eject\n"));
 
     if (!fs.existsSync(packageViewerDir)) {
       console.log(
@@ -105,7 +105,7 @@ program
     console.log(
       chalk.white("\nThe viewer will be used automatically when you run:"),
     );
-    console.log(chalk.cyan("  npx glossia serve\n"));
+    console.log(chalk.cyan("  npx trans-spec serve\n"));
     console.log(chalk.white("Or run it directly for full control:"));
     console.log(chalk.cyan(`  cd ${EJECTED_VIEWER_DIR} && npm run dev\n`));
   });
@@ -136,17 +136,17 @@ program
     }
 
     const publicDir = path.join(viewerDir, "public");
-    const glossiaSource = path.join(process.cwd(), ".glossia");
-    const glossiaDest = path.join(publicDir, "glossia");
+    const transSpecSource = path.join(process.cwd(), ".trans-spec");
+    const transSpecDest = path.join(publicDir, "trans-spec");
 
-    // Check if .glossia exists
-    if (!fs.existsSync(glossiaSource)) {
+    // Check if .trans-spec exists
+    if (!fs.existsSync(transSpecSource)) {
       console.log(
-        chalk.red("\n✖ No .glossia folder found in current directory"),
+        chalk.red("\n✖ No .trans-spec folder found in current directory"),
       );
       console.log(
         chalk.white(
-          "Run: npx glossia generate --spec api.yaml --languages es,fr first\n",
+          "Run: npx trans-spec generate --spec api.yaml --languages es,fr first\n",
         ),
       );
       process.exit(1);
@@ -154,12 +154,12 @@ program
 
     // Read API spec languages
     const i18nConfig = JSON.parse(
-      fs.readFileSync(path.join(glossiaSource, "i18n.json"), "utf-8"),
+      fs.readFileSync(path.join(transSpecSource, "i18n.json"), "utf-8"),
     );
     const sourceLocale = i18nConfig.locale.source;
     const targetLocales = i18nConfig.locale.targets;
 
-    console.log(chalk.cyan("\n🚀 Starting Glossia viewer...\n"));
+    console.log(chalk.cyan("\n🚀 Starting Trans-Spec viewer...\n"));
 
     // Check for API key and prompt if not found
     let apiKey = process.env.LINGODOTDEV_API_KEY;
@@ -220,14 +220,14 @@ program
       console.log(chalk.green("✔ API key found\n"));
     }
 
-    // Copy .glossia to viewer/public
-    if (fs.existsSync(glossiaDest)) {
-      fs.rmSync(glossiaDest, { recursive: true });
+    // Copy .trans-spec to viewer/public
+    if (fs.existsSync(transSpecDest)) {
+      fs.rmSync(transSpecDest, { recursive: true });
     }
-    fs.cpSync(glossiaSource, glossiaDest, { recursive: true });
+    fs.cpSync(transSpecSource, transSpecDest, { recursive: true });
 
     // Create index of available spec files
-    const specI18nDir = path.join(glossiaSource, "i18n");
+    const specI18nDir = path.join(transSpecSource, "i18n");
     const languages = fs.readdirSync(specI18nDir);
     const index = {};
 
@@ -242,7 +242,7 @@ program
     });
 
     fs.writeFileSync(
-      path.join(glossiaDest, "index.json"),
+      path.join(transSpecDest, "index.json"),
       JSON.stringify(index, null, 2),
     );
 

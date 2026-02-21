@@ -3,7 +3,7 @@ import chalk from "chalk";
 import ora from "ora";
 import path from "path";
 
-const GLOSSIA_DIR = ".glossia";
+const TRANSSPEC_DIR = ".trans-spec";
 const MAX_RETRIES = 2;
 
 async function runTranslation() {
@@ -12,7 +12,7 @@ async function runTranslation() {
     let hasErrors = false;
 
     const process = spawn("npx", ["lingo.dev@latest", "run"], {
-      cwd: path.resolve(GLOSSIA_DIR),
+      cwd: path.resolve(TRANSSPEC_DIR),
       shell: true,
       stdio: "pipe",
     });

@@ -6,4 +6,4 @@ lingo/
 dist/
 vite.config.generated.js
 *.log
-.glossia/
+.trans-spec/

@@ -18,7 +18,7 @@ cli/node_modules/
 viewer/node_modules/
 
 # Build artifacts
-.glossia/
+.trans-spec/
 viewer/dist/
 viewer/.lingo/
 viewer/vite.config.generated.js

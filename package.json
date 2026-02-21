@@ -1,13 +1,13 @@
 {
-  "name": "glossia",
+  "name": "trans-spec",
   "version": "1.0.0",
-  "description": "Translate your API documentation into any language in seconds",
+  "description": "Translate your OpenAPI specification into any language and generate a multilingual documentation site in seconds",
   "main": "cli/index.js",
   "scripts": {
     "test": "echo \"No tests yet\" && exit 0"
   },
   "bin": {
-    "glossia": "./cli/index.js"
+    "trans-spec": "./cli/index.js"
   },
   "type": "module",
   "keywords": [
@@ -24,12 +24,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ade555/glossia.git"
+    "url": "https://github.com/ade555/trans-spec.git"
   },
   "bugs": {
-    "url": "https://github.com/ade555/glossia/issues"
+    "url": "https://github.com/ade555/trans-spec/issues"
   },
-  "homepage": "https://github.com/ade555/glossia#readme",
+  "homepage": "https://github.com/ade555/trans-spec#readme",
   "engines": {
     "node": ">=18.0.0"
   },

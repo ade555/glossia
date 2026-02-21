@@ -5,7 +5,7 @@ import yaml from "js-yaml";
  * Load the index to see what specs are available
  */
 export async function getSpecIndex() {
-  const response = await fetch("/glossia/index.json");
+  const response = await fetch("/trans-spec/index.json");
   return await response.json();
 }
 
@@ -23,7 +23,7 @@ export function getBrowserLanguage() {
  */
 export async function getAvailableLanguages() {
   try {
-    const response = await fetch("/glossia/i18n.json");
+    const response = await fetch("/trans-spec/i18n.json");
     const config = await response.json();
 
     return {
@@ -64,7 +64,7 @@ export async function getDefaultSpec() {
  */
 export async function loadSpec(language, filename) {
   try {
-    const response = await fetch(`/glossia/i18n/${language}/${filename}`);
+    const response = await fetch(`/trans-spec/i18n/${language}/${filename}`);
     const yamlText = await response.text();
     const parsed = yaml.load(yamlText);
 
